@@ -1,7 +1,7 @@
 import type { UMLNode, UMLEdge, UMLAttribute, UMLOperation } from '../interfaces/uml';
 import { NODE_H, NODE_W } from '../constants/config';
 
-const PRIMITIVE_TYPES = new Set(['int', 'bool', 'boolean', 'float', 'double', 'number', 'char', 'void']);
+const PRIMITIVE_TYPES = new Set(['int', 'bool', 'boolean', 'float', 'double', 'number', 'char', 'void', 'string']);
 
 interface ParseNodeData {
   attributes: UMLAttribute[];
@@ -75,7 +75,7 @@ const ensureClass = (classes: Map<string, ParseNodeData>, className: string) => 
 };
 
 export const getTypeCategory = (typeName: string): 'primitive' | 'object' => {
-  return PRIMITIVE_TYPES.has(typeName.trim().toLowerCase()) ? 'primitive' : 'object';
+  return PRIMITIVE_TYPES.has(typeName.trim()) ? 'primitive' : 'object';
 };
 
 export const parseMermaidClassDiagram = (input: string): MermaidParseResult => {
