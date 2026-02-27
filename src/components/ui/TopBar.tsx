@@ -1,7 +1,7 @@
 // src/components/ui/TopBar.tsx
 
 import React from 'react';
-import { MousePointer2 } from 'lucide-react';
+import { FileCode2, MousePointer2 } from 'lucide-react';
 import { RELATIONSHIP_TYPES } from '../../constants/config';
 import type { ConnectionState } from '../../interfaces/uml';
 
@@ -9,12 +9,14 @@ interface TopBarProps {
   connectionState: ConnectionState | null;
   onChangeConnectionType: (type: ConnectionState['type']) => void;
   onClearCanvas: () => void;
+  onOpenLiveParser: () => void;
 }
 
 export const TopBar: React.FC<TopBarProps> = ({
   connectionState,
   onChangeConnectionType,
-  onClearCanvas
+  onClearCanvas,
+  onOpenLiveParser
 }) => {
   return (
     <header className="h-14 border-b border-slate-800 flex items-center justify-between px-6 bg-slate-900/80 backdrop-blur-lg z-40 shadow-lg">
@@ -33,6 +35,14 @@ export const TopBar: React.FC<TopBarProps> = ({
       </div>
       
       <div className="flex items-center gap-3">
+        <button
+          onClick={onOpenLiveParser}
+          className="px-3 py-1.5 bg-indigo-500/10 text-indigo-300 text-[10px] font-bold rounded-lg border border-indigo-500/30 hover:bg-indigo-500 hover:text-white transition-all uppercase tracking-widest flex items-center gap-1"
+        >
+          <FileCode2 size={13} />
+          Live Parser
+        </button>
+
         {connectionState && (
           <div className="flex gap-1 px-3 py-1.5 bg-slate-800/50 rounded-lg border border-slate-700">
             {Object.entries(RELATIONSHIP_TYPES).map(([key, type], idx) => (

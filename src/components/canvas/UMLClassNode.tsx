@@ -4,6 +4,7 @@ import React from 'react';
 import type { UMLNode, AnchorPoint } from '../../interfaces/uml';
 import { THEMES, VISIBILITY_INFO } from '../../constants/config';
 import { ConnectionPoints } from './ConnectionPoints';
+import { getTypeCategory } from '../../utils/mermaidParser';
 
 interface UMLClassNodeProps {
   node: UMLNode;
@@ -39,6 +40,10 @@ export const UMLClassNode: React.FC<UMLClassNodeProps> = React.memo(({
                      node.data.type === 'abstract' ? 'abstract' : 
                      node.data.type === 'enum' ? 'enumeration' : 
                      node.data.stereotype || '';
+
+  const getTypeClass = (typeValue: string) => {
+    return getTypeCategory(typeValue) === 'primitive' ? 'text-cyan-300' : 'text-fuchsia-300';
+  };
 
   return (
     <div 
@@ -89,7 +94,7 @@ export const UMLClassNode: React.FC<UMLClassNodeProps> = React.memo(({
               <span className={`font-bold w-4 shrink-0 ${VISIBILITY_INFO[a.visibility]?.color || 'text-slate-400'}`}>
                 {a.visibility}
               </span>
-              <span className="truncate">{a.name}: <span className="text-slate-400">{a.type}</span></span>
+              <span className="truncate">{a.name}: <span className={getTypeClass(a.type)}>{a.type}</span></span>
             </div>
           ))
         )}
@@ -105,7 +110,7 @@ export const UMLClassNode: React.FC<UMLClassNodeProps> = React.memo(({
               <span className={`font-bold w-4 shrink-0 ${VISIBILITY_INFO[op.visibility]?.color || 'text-slate-400'}`}>
                 {op.visibility}
               </span>
-              <span className="truncate">{op.name}(): <span className="text-slate-400">{op.returnType}</span></span>
+              <span className="truncate">{op.name}(): <span className={getTypeClass(op.returnType)}>{op.returnType}</span></span>
             </div>
           ))
         )}

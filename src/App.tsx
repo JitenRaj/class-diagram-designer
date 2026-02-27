@@ -24,6 +24,8 @@ import { EntityModal } from './components/modals/EntityModal';
 import { MemberModal } from './components/modals/MemberModal';
 import { Sidebar } from './components/ui/Sidebar';
 import { TopBar } from './components/ui/TopBar';
+import { LiveCodeParserModal } from './components/modals/LiveCodeParserModal';
+import { parseMermaidClassDiagram } from './utils/mermaidParser';
 
 const DEFAULT_NODES: UMLNode[] = [
   { 
@@ -106,8 +108,21 @@ const App: React.FC = () => {
     index: -1 
   });
   const [showGrid, setShowGrid] = useState(true);
+  const [showLiveParser, setShowLiveParser] = useState(false);
+  const [liveParserInput, setLiveParserInput] = useState(`classDiagram\n    Animal <|-- Duck\n    Animal <|-- Fish\n    Animal <|-- Zebra\n    Animal : +int age\n    Animal : +String gender\n    Animal: +isMammal()\n    Animal: +mate()\n    class Duck{\n      +String beakColor\n      +swim()\n      +quack()\n    }\n    class Fish{\n      -int sizeInFeet\n      -canEat()\n    }\n    class Zebra{\n      +bool is_wild\n      +run()\n    }`);
   
   const canvasRef = useRef<HTMLDivElement>(null);
+
+  const deleteSelection = useCallback(() => {
+    if (selectedId) {
+      setNodes(prev => prev.filter(n => n.id !== selectedId));
+      setEdges(prev => prev.filter(e => e.from !== selectedId && e.to !== selectedId));
+      setSelectedId(null);
+    } else if (selectedEdgeId) {
+      setEdges(prev => prev.filter(e => e.id !== selectedEdgeId));
+      setSelectedEdgeId(null);
+    }
+  }, [selectedId, selectedEdgeId]);
 
   // Persist to localStorage
   useEffect(() => {
@@ -161,7 +176,7 @@ const App: React.FC = () => {
 
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [selectedId, selectedEdgeId, connectionState, activeModal, nodes]);
+  }, [selectedId, selectedEdgeId, connectionState, activeModal, nodes, deleteSelection]);
 
   // Zoom and Pan handlers
   const handleWheel = useCallback((e: React.WheelEvent) => {
@@ -293,16 +308,7 @@ const App: React.FC = () => {
     }
   };
 
-  const deleteSelection = () => {
-    if (selectedId) {
-      setNodes(prev => prev.filter(n => n.id !== selectedId));
-      setEdges(prev => prev.filter(e => e.from !== selectedId && e.to !== selectedId));
-      setSelectedId(null);
-    } else if (selectedEdgeId) {
-      setEdges(prev => prev.filter(e => e.id !== selectedEdgeId));
-      setSelectedEdgeId(null);
-    }
-  };
+
 
   const createEntity = () => {
     if (!entityForm.name.trim()) return;
@@ -335,16 +341,32 @@ const App: React.FC = () => {
         ? { visibility: memberForm.visibility, name: memberForm.name, type: memberForm.type || 'string' }
         : { visibility: memberForm.visibility, name: memberForm.name, returnType: memberForm.type || 'void' };
       
-      let list = [...n.data[key]];
+      const list = [...n.data[key]];
       if (memberForm.index >= 0) {
-        list[memberForm.index] = newItem as any;
+        list[memberForm.index] = newItem;
       } else {
-        list.push(newItem as any);
+        list.push(newItem);
       }
       
       return { ...n, data: { ...n.data, [key]: list }};
     }));
     setActiveModal(null);
+  };
+
+  const applyLiveParser = () => {
+    const parsed = parseMermaidClassDiagram(liveParserInput);
+
+    if (parsed.nodes.length === 0) {
+      return;
+    }
+
+    setNodes(parsed.nodes);
+    setEdges(parsed.edges);
+    setSelectedId(null);
+    setSelectedEdgeId(null);
+    setConnectionState(null);
+    setTempConnection(null);
+    setShowLiveParser(false);
   };
 
   const renderedEdges = useMemo(() => {
@@ -391,6 +413,7 @@ const App: React.FC = () => {
             storageService.clearAll();
             window.location.reload();
           }}
+          onOpenLiveParser={() => setShowLiveParser(true)}
         />
 
         {/* CANVAS */}
@@ -609,6 +632,15 @@ const App: React.FC = () => {
       </aside>
 
       {/* MODALS */}
+      {showLiveParser && (
+        <LiveCodeParserModal
+          value={liveParserInput}
+          onChange={setLiveParserInput}
+          onParse={applyLiveParser}
+          onClose={() => setShowLiveParser(false)}
+        />
+      )}
+
       {activeModal === 'entity' && (
         <EntityModal
           form={entityForm}
