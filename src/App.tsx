@@ -373,7 +373,7 @@ const App: React.FC = () => {
     return edges.map(edge => {
       const n1 = nodes.find(n => n.id === edge.from);
       const n2 = nodes.find(n => n.id === edge.to);
-      const routing = getManhattanPath(n1 || null, n2 || null, edge.startAnchor, edge.endAnchor);
+      const routing = getManhattanPath(n1 || null, n2 || null, edge.type, edge.startAnchor, edge.endAnchor);
       return { ...edge, ...routing };
     });
   }, [edges, nodes]);
@@ -446,19 +446,19 @@ const App: React.FC = () => {
             <svg className="overflow-visible absolute top-0 left-0 pointer-events-none" style={{ width: 1, height: 1 }}>
               <defs>
                 {/* Arrow Markers */}
-                <marker id="uml-inheritance" markerWidth="16" markerHeight="16" refX="15" refY="8" orient="auto">
+                <marker id="uml-inheritance" markerWidth="16" markerHeight="16" refX="14" refY="8" markerUnits="userSpaceOnUse" orient="auto-start-reverse">
                   <path d="M0,0 L16,8 L0,16 Z" fill="#0f172a" stroke="#a78bfa" strokeWidth="2" />
                 </marker>
 
-                <marker id="uml-composition" markerWidth="18" markerHeight="12" refX="0" refY="6" orient="auto">
+                <marker id="uml-composition" markerWidth="18" markerHeight="12" refX="2" refY="6" markerUnits="userSpaceOnUse" orient="auto-start-reverse">
                   <path d="M0,6 L9,0 L18,6 L9,12 Z" fill="#f87171" />
                 </marker>
 
-                <marker id="uml-aggregation" markerWidth="18" markerHeight="12" refX="0" refY="6" orient="auto">
+                <marker id="uml-aggregation" markerWidth="18" markerHeight="12" refX="2" refY="6" markerUnits="userSpaceOnUse" orient="auto-start-reverse">
                   <path d="M0,6 L9,0 L18,6 L9,12 Z" fill="#0f172a" stroke="#fbbf24" strokeWidth="2" />
                 </marker>
 
-                <marker id="uml-association" markerWidth="14" markerHeight="12" refX="13" refY="6" orient="auto">
+                <marker id="uml-association" markerWidth="14" markerHeight="12" refX="12" refY="6" markerUnits="userSpaceOnUse" orient="auto-start-reverse">
                   <path d="M1,1 L13,6 L1,11" fill="none" stroke="#60a5fa" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
                 </marker>
               </defs>

@@ -7,6 +7,45 @@ export const MIN_ZOOM = 0.2;
 export const MAX_ZOOM = 3;
 export const CONNECTION_POINT_RADIUS = 6;
 
+
+export const EDGE_ROUTING_CONFIG = {
+  cornerRadius: 16,
+  minSegmentLength: 24,
+  endOffsetByType: {
+    association: 10,
+    inheritance: 18,
+    realization: 18,
+    composition: 12,
+    aggregation: 12,
+    dependency: 10
+  },
+  startOffsetByType: {
+    association: 2,
+    inheritance: 2,
+    realization: 2,
+    composition: 12,
+    aggregation: 12,
+    dependency: 2
+  }
+} as const;
+
+export const MERMAID_CLASS_DIAGRAM_CONFIG = {
+  startOnLoad: false,
+  securityLevel: 'loose',
+  deterministicIds: true,
+  flowchart: {
+    curve: 'basis',
+    padding: 16,
+    nodeSpacing: 70,
+    rankSpacing: 80,
+    htmlLabels: false
+  },
+  class: {
+    useMaxWidth: true,
+    hideEmptyMembersBox: false
+  }
+} as const;
+
 export const RELATIONSHIP_TYPES = {
   association: { 
     label: 'Association', 
