@@ -132,7 +132,20 @@ const App: React.FC = () => {
 
   // Keyboard shortcuts
   useEffect(() => {
+    const isEditableTarget = (target: EventTarget | null) => {
+      const element = target as HTMLElement | null;
+      if (!element) return false;
+
+      const tagName = element.tagName;
+      return element.isContentEditable || tagName === 'INPUT' || tagName === 'TEXTAREA' || tagName === 'SELECT';
+    };
+
     const handleKeyDown = (e: KeyboardEvent) => {
+      const activeElement = document.activeElement;
+      if (showLiveParser || isEditableTarget(e.target) || isEditableTarget(activeElement)) {
+        return;
+      }
+
       // Delete selected item
       if ((e.key === 'Delete' || e.key === 'Backspace') && !activeModal) {
         e.preventDefault();
@@ -176,7 +189,7 @@ const App: React.FC = () => {
 
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [selectedId, selectedEdgeId, connectionState, activeModal, nodes, deleteSelection]);
+  }, [selectedId, selectedEdgeId, connectionState, activeModal, nodes, deleteSelection, showLiveParser]);
 
   // Zoom and Pan handlers
   const handleWheel = useCallback((e: React.WheelEvent) => {
