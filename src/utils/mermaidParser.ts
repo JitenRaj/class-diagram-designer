@@ -1,3 +1,5 @@
+// src/utils/mermaidParser.ts
+
 import type { UMLNode, UMLEdge, UMLAttribute, UMLOperation } from '../interfaces/uml';
 import { NODE_H, NODE_W } from '../constants/config';
 
@@ -13,8 +15,25 @@ export interface MermaidParseResult {
   edges: UMLEdge[];
 }
 
+const RELATION_MAP: Record<string, { type: UMLEdge['type'], reverse: boolean }> = {
+  '<|--': { type: 'inheritance', reverse: true },  // Arrow points left
+  '--|>': { type: 'inheritance', reverse: false }, // Arrow points right
+  '*--':  { type: 'composition', reverse: false }, // Diamond on left
+  '--*':  { type: 'composition', reverse: true },  // Diamond on right
+  'o--':  { type: 'aggregation', reverse: false }, // Empty diamond on left
+  '--o':  { type: 'aggregation', reverse: true },  // Empty diamond on right
+  '-->':  { type: 'association', reverse: false }, // Open arrow on right
+  '<--':  { type: 'association', reverse: true },  // Open arrow on left
+  '..>':  { type: 'dependency', reverse: false },  // Dashed arrow right
+  '<..':  { type: 'dependency', reverse: true },   // Dashed arrow left
+  '<|..': { type: 'realization', reverse: true },  // Dashed inheritance left
+  '..|>': { type: 'realization', reverse: false }, // Dashed inheritance right
+  '--':   { type: 'association', reverse: false }, // Solid link
+  '..':   { type: 'dependency', reverse: false }   // Dashed link
+};
+
 const normalizeVisibility = (value: string): UMLAttribute['visibility'] => {
-  if (value === '+' || value === '-' || value === '#' || value === '~') return value;
+  if (value === '+' || value === '-' || value === '#' || value === '~') return value as UMLAttribute['visibility'];
   return '+';
 };
 
@@ -36,11 +55,7 @@ const parseMemberLine = (rawLine: string): { kind: 'attribute' | 'operation'; va
 
     return {
       kind: 'operation',
-      value: {
-        visibility,
-        name: methodName,
-        returnType: 'void'
-      }
+      value: { visibility, name: methodName, returnType: 'void' }
     };
   }
 
@@ -50,21 +65,13 @@ const parseMemberLine = (rawLine: string): { kind: 'attribute' | 'operation'; va
   if (nameCandidate) {
     return {
       kind: 'attribute',
-      value: {
-        visibility,
-        name: nameCandidate,
-        type: typeCandidate
-      }
+      value: { visibility, name: nameCandidate, type: typeCandidate }
     };
   }
 
   return {
     kind: 'attribute',
-    value: {
-      visibility,
-      name: typeCandidate,
-      type: 'string'
-    }
+    value: { visibility, name: typeCandidate, type: 'string' }
   };
 };
 
@@ -111,18 +118,30 @@ export const parseMermaidClassDiagram = (input: string): MermaidParseResult => {
       continue;
     }
 
-    const inheritance = line.match(/^([A-Za-z_][\w]*)\s*<\|--\s*([A-Za-z_][\w]*)$/);
-    if (inheritance) {
-      const [, parent, child] = inheritance;
-      ensureClass(classes, parent);
-      ensureClass(classes, child);
+    const relationMatch = line.match(/^([A-Za-z_][\w]*)(?:\s+"([^"]+)")?\s+(<\|--|--\|>|\*--|--\*|o--|--o|-->|<--|\.\.>|<\.\.|<\|\.\.|\.\.\|>|--|\.\.)\s+(?:"([^"]+)"\s+)?([A-Za-z_][\w]*)(?:\s*:\s*(.+))?$/);
+    
+    if (relationMatch) {
+      const [, leftClass, leftMult, relationSym, rightMult, rightClass] = relationMatch;
+      ensureClass(classes, leftClass);
+      ensureClass(classes, rightClass);
+
+      const relDef = RELATION_MAP[relationSym] || { type: 'association', reverse: false };
+
+      // Swap 'from' and 'to' if the arrow is pointing leftwards
+      const fromClass = relDef.reverse ? rightClass : leftClass;
+      const toClass = relDef.reverse ? leftClass : rightClass;
+      
+      // Swap multiplicity labels accordingly
+      const startMult = relDef.reverse ? (rightMult || '') : (leftMult || '');
+      const endMult = relDef.reverse ? (leftMult || '') : (rightMult || '');
+
       edges.push({
-        id: `e-${parent}-${child}-${edges.length}`,
-        from: child,
-        to: parent,
-        type: 'inheritance',
-        startMult: '',
-        endMult: '',
+        id: `e-${fromClass}-${toClass}-${edges.length}`,
+        from: fromClass,
+        to: toClass,
+        type: relDef.type,
+        startMult,
+        endMult,
         startAnchor: null,
         endAnchor: null
       });
