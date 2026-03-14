@@ -141,8 +141,6 @@ const App: React.FC = () => {
     };
 
     const handleKeyDown = (e: KeyboardEvent) => {
-      const activeElement = document.activeElement;
-      if (showLiveParser || isEditableTarget(e.target) || isEditableTarget(activeElement)) {
       if (isEditableTarget(e.target)) {
         return;
       }
@@ -190,7 +188,7 @@ const App: React.FC = () => {
 
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [selectedId, selectedEdgeId, connectionState, activeModal, nodes, deleteSelection, showLiveParser]);
+  }, [selectedId, selectedEdgeId, connectionState, activeModal, nodes, deleteSelection]);
 
   // Zoom and Pan handlers
   const handleWheel = useCallback((e: React.WheelEvent) => {
