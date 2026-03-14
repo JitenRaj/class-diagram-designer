@@ -143,6 +143,7 @@ const App: React.FC = () => {
     const handleKeyDown = (e: KeyboardEvent) => {
       const activeElement = document.activeElement;
       if (showLiveParser || isEditableTarget(e.target) || isEditableTarget(activeElement)) {
+      if (isEditableTarget(e.target)) {
         return;
       }
 
