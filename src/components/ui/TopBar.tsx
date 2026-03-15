@@ -22,7 +22,7 @@ export const TopBar: React.FC<TopBarProps> = ({
     <header className="h-14 border-b border-slate-800 flex items-center justify-between px-6 bg-slate-900/80 backdrop-blur-lg z-40 shadow-lg">
       <div className="flex items-center gap-6">
         <h1 className="text-xs font-black tracking-widest uppercase bg-gradient-to-r from-indigo-400 to-purple-400 bg-clip-text text-transparent">
-          UML Architect Pro v7.0
+          UML Architect Pro
         </h1>
         {connectionState && (
           <div className="flex items-center gap-3 px-4 py-2 bg-indigo-600/20 border border-indigo-500/30 rounded-lg animate-pulse">
